@@ -1,0 +1,34 @@
+id: LU-UCITS-LIQUIDITES-ACCESSOIRES-20
+version: 1
+name: "Liquidités à titre accessoire – 20 %"
+category: depots_liquidites
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Un OPCVM peut détenir des liquidités à titre accessoire (dépôts bancaires à vue) ; selon la doctrine de la
+  CSSF, leur montant est limité à 20 % des actifs nets, sauf circonstances exceptionnelles.
+formula: "w = Σ soldes créditeurs des comptes de trésorerie à vue / actif net ; contrôle w ≤ 20 %."
+calculator: aggregate_filter
+params:
+  base: net_assets
+  amount_field: total_market_value
+  amount_transform: positive
+  filters:
+    - {field: instrument_type, op: in, value: [cash_account, cash_account_other]}
+  assumptions:
+    - "Comptes TR500100 et TR500400 traités comme comptes à vue ; les appels de marge sur futures sont exclus"
+limits:
+  - {key: total, label: "Liquidités à titre accessoire / actif net", operator: "<=", value: "0.20"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Dépassement temporaire admis en cas de conditions de marché exceptionnellement défavorables (à documenter)."
+required_data: [net_assets, positions.total_market_value]
+sources:
+  - {source: CSSF-FAQ-LOI-2010, article: "liquidités à titre accessoire", confidence: a_confirmer}
+  - {source: LU-LOI-2010, article: "art. 41 §2", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date d'application de la doctrine CSSF à confirmer"

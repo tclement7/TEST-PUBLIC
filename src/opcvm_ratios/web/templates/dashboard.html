@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+{% if msg %}<div class="flash">{{ msg }}</div>{% endif %}
+{% for e in ref_errors %}<div class="err">Référentiel : {{ e }}</div>{% endfor %}
+<div class="row" style="justify-content:space-between">
+  <h1>Vue globale</h1>
+  <div class="row">
+    <form method="post" action="/scan"><button class="btn alt">Scanner les fichiers</button></form>
+    <form method="post" action="/run"><input type="hidden" name="scan_first" value="1"><button class="btn">Lancer le contrôle</button></form>
+  </div>
+</div>
+{% set tot = namespace(ko=0, near=0, ok=0, tbc=0, nc=0, ind=0) %}
+{% for r in rows %}{% set tot.ko = tot.ko + r.counts.DEPASSEMENT + r.counts.CONFLIT_REGLES %}{% set tot.near = tot.near + r.counts.PROCHE_LIMITE %}{% set tot.ok = tot.ok + r.counts.CONFORME %}{% set tot.tbc = tot.tbc + r.counts.A_CONFIRMER %}{% set tot.nc = tot.nc + r.counts.NON_CALCULABLE %}{% set tot.ind = tot.ind + r.counts.indicative_breach %}{% endfor %}
+<div class="kpis">
+  <div class="kpi"><div class="n">{{ rows|length }}</div><div class="l">fonds contrôlés</div></div>
+  <div class="kpi ko"><div class="n">{{ tot.ko }}</div><div class="l">dépassements / conflits</div></div>
+  <div class="kpi tbc"><div class="n">{{ tot.tbc }}</div><div class="l">à confirmer (dont {{ tot.ind }} dépassement(s) indicatif(s))</div></div>
+  <div class="kpi near"><div class="n">{{ tot.near }}</div><div class="l">proches de la limite</div></div>
+  <div class="kpi ok"><div class="n">{{ tot.ok }}</div><div class="l">conformes</div></div>
+  <div class="kpi nc"><div class="n">{{ tot.nc }}</div><div class="l">non calculables</div></div>
+  <div class="kpi"><div class="n">{{ files_err }}</div><div class="l">fichier(s) en erreur</div></div>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Fonds</th><th>Date des données</th><th class="num">Nombre de ratios</th><th class="num">Conformes</th><th class="num">Proches de la limite</th><th class="num">Dépassements</th><th class="num">À confirmer</th><th class="num">dont dépassement indicatif</th><th class="num">Non calculables</th><th class="num">Non applicables</th><th>Calcul</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr>
+ <td><a href="/fund/{{ r.fund_id }}"><b>{{ r.name }}</b></a><br><span class="muted small">{{ r.fund_id }}</span></td>
+ <td>{{ r.date|date }}</td>
+ <td class="num">{{ r.counts.total }}</td>
+ <td class="num">{% if r.counts.CONFORME %}<span class="badge s-CONFORME">{{ r.counts.CONFORME }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{% if r.counts.PROCHE_LIMITE %}<span class="badge s-PROCHE_LIMITE">{{ r.counts.PROCHE_LIMITE }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{% if r.counts.DEPASSEMENT + r.counts.CONFLIT_REGLES %}<span class="badge s-DEPASSEMENT">{{ r.counts.DEPASSEMENT + r.counts.CONFLIT_REGLES }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{% if r.counts.A_CONFIRMER %}<span class="badge s-A_CONFIRMER">{{ r.counts.A_CONFIRMER }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{% if r.counts.indicative_breach %}<span class="badge s-DEPASSEMENT">{{ r.counts.indicative_breach }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{% if r.counts.NON_CALCULABLE %}<span class="badge s-NON_CALCULABLE">{{ r.counts.NON_CALCULABLE }}</span>{% else %}0{% endif %}</td>
+ <td class="num">{{ r.counts.NON_APPLICABLE }}</td>
+ <td class="small">#{{ r.run_id }}<br><span class="muted">{{ r.computed_at|date }}</span></td>
+</tr>
+{% else %}
+<tr><td colspan="11" class="muted">Aucun calcul. Déposez les fichiers dans le dossier source puis cliquez sur « Lancer le contrôle ».</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% if pending %}<p class="muted small">Fonds paramétrés sans calcul : {% for f in pending %}{{ f.name }} ({{ f.fund_id }}){% if not loop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+<p class="muted small">« À confirmer » : le calcul a été réalisé mais la règle n'est pas encore validée, ou le résultat repose sur une caractéristique du fonds non renseignée ou sur une donnée de référentiel non validée. Le statut indicatif reste visible dans le détail.</p>
+{% endblock %}

@@ -1,0 +1,3 @@
+identifiant;type_identifiant;emetteur_id;emetteur_nom;groupe_id;groupe_nom;type_emetteur;encours_emis;statut;source;commentaire
+FR0000000001;ISIN;FR-ETAT;République française;FR-ETAT;République française;souverain_ue;;valide;Prospectus d'émission;Exemple
+Banque Exemple;CONTREPARTIE;BQ-EX;Banque Exemple SA;GRP-BQ;Groupe Banque Exemple;etablissement_credit_ue;;valide;Registre interne;Exemple

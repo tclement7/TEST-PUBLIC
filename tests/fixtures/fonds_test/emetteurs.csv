@@ -1,0 +1,22 @@
+identifiant;type_identifiant;emetteur_id;emetteur_nom;groupe_id;groupe_nom;type_emetteur;encours_emis;statut;source;commentaire
+FR000000X010;ISIN;EM-X;Société X;GRP-X;Groupe X;entreprise;;valide;Jeu de test fictif;
+FR000000Y018;ISIN;EM-Y;Société Y;GRP-G;Groupe G;entreprise;;valide;Jeu de test fictif;
+FR000000Y026;ISIN;EM-Y;Société Y;GRP-G;Groupe G;entreprise;;valide;Jeu de test fictif;
+XS000000Z016;ISIN;EM-Z;Z Finance;GRP-Z;Groupe Z;entreprise;;valide;Jeu de test fictif;
+DE000000W015;ISIN;EM-W;Société W;GRP-W;Groupe W;entreprise;;valide;Jeu de test fictif;
+NL000000V011;ISIN;EM-V;Société V;GRP-G;Groupe G;entreprise;;valide;Jeu de test fictif;
+FR0000BTF013;ISIN;FR-ETAT;République française;;;souverain_ue;;valide;Jeu de test fictif;
+FR0000BTF021;ISIN;FR-ETAT;République française;;;souverain_ue;;valide;Jeu de test fictif;
+FR0000BTF039;ISIN;FR-ETAT;République française;;;souverain_ue;;valide;Jeu de test fictif;
+LU000000OPC5;ISIN;OPC-CIBLE;OPCVM Cible Actions;;;opcvm;;valide;Jeu de test fictif;
+Banque Test;CONTREPARTIE;BQ-TEST;Banque Test;GRP-BQ;Groupe Banque Test;etablissement_credit_ue;;valide;Jeu de test fictif;
+IT00000D0006;ISIN;EM-D0;Société Diverse 0;GRP-D0;Groupe D0;entreprise;;valide;Jeu de test fictif;
+IT00000D0014;ISIN;EM-D1;Société Diverse 1;GRP-D1;Groupe D1;entreprise;;valide;Jeu de test fictif;
+IT00000D0022;ISIN;EM-D2;Société Diverse 2;GRP-D2;Groupe D2;entreprise;;valide;Jeu de test fictif;
+IT00000D0030;ISIN;EM-D3;Société Diverse 3;GRP-D3;Groupe D3;entreprise;;valide;Jeu de test fictif;
+IT00000D0048;ISIN;EM-D4;Société Diverse 4;GRP-D4;Groupe D4;entreprise;;valide;Jeu de test fictif;
+IT00000D0055;ISIN;EM-D5;Société Diverse 5;GRP-D5;Groupe D5;entreprise;;valide;Jeu de test fictif;
+IT00000D0063;ISIN;EM-D6;Société Diverse 6;GRP-D6;Groupe D6;entreprise;;valide;Jeu de test fictif;
+IT00000D0071;ISIN;EM-D7;Société Diverse 7;GRP-D7;Groupe D7;entreprise;;valide;Jeu de test fictif;
+IT00000D0089;ISIN;EM-D8;Société Diverse 8;GRP-D8;Groupe D8;entreprise;;valide;Jeu de test fictif;
+IT00000D0097;ISIN;EM-D9;Société Diverse 9;GRP-D9;Groupe D9;entreprise;;valide;Jeu de test fictif;

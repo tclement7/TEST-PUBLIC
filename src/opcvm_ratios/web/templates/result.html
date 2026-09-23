@@ -1,0 +1,75 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, gauge %}
+{% block title %}{{ r.rule.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/fund/{{ r.fund.id }}?run={{ r._run_id }}">← {{ r.fund.name }}</a></p>
+<h1>{{ r.rule.name }}</h1>
+<div class="flow"><span>Données sources</span><b>→</b><span>Formule</span><b>→</b><span>Calcul</span><b>→</b><span>Résultat</span><b>→</b><span>Limite</span><b>→</b><span>Statut</span></div>
+<div class="grid2">
+<div class="card">
+  <div class="row" style="justify-content:space-between"><div>{{ badge(r.status) }} {% if r.status == 'A_CONFIRMER' %}<span class="ind">statut indicatif : {{ badge(r.indicative_status) }}</span>{% endif %}</div>
+  <div class="muted small">Fonds {{ r.fund.id }} · données au {{ r.data_date|date }} · calculé le {{ r.computed_at|date }}</div></div>
+  {% for lim in r.limits %}
+  <div style="margin-top:10px">
+    <div class="muted small">{{ lim.label }}</div>
+    <div class="row"><div class="big">{{ limval(lim) }}</div><div>limite {{ lim.operator|op }} <b>{{ limval({'value': lim.limit, 'unit': lim.unit}) }}</b>{% if lim.alert is not none %} · alerte interne {{ limval({'value': lim.alert, 'unit': lim.unit}) }}{% endif %}<br>marge <b>{{ limval(lim, 'margin') }}</b>{% if lim.margin_amount is not none %} ({{ lim.margin_amount|amt(r.currency) }}){% endif %}</div><div>{{ badge(lim.status) }}</div></div>
+    {{ gauge(lim) }}
+  </div>
+  {% endfor %}
+  {% if r.reasons %}<h3>Motifs</h3><ul class="small">{% for m in r.reasons %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+</div>
+<div class="card small">
+  <b>Règle</b> <span class="mono">{{ r.rule.id }}</span> – version {{ r.rule.version }} – empreinte <span class="mono">{{ r.rule.sha256|short(16) }}…</span><br>
+  {% if r.rule.validated %}<span class="badge s-CONFORME">Validée</span> par {{ r.rule.validation.by }} le {{ r.rule.validation.on|date }}{% else %}<span class="badge s-A_CONFIRMER">Brouillon – non validée</span>{% endif %}
+  <p><b>Définition :</b> {{ r.rule.definition }}</p>
+  <p><b>Formule :</b> {{ r.rule.formula }}</p>
+  <p><b>Sources :</b><br>{% for s in r.rule.sources %}{{ s.title or s.source_id }} – {{ s.article }} <span class="muted">[{{ s.confidence }}]</span><br>{% endfor %}</p>
+  <p><b>En vigueur :</b> du {{ r.rule.valid_from|date }}{% if r.rule.valid_to %} au {{ r.rule.valid_to|date }}{% endif %} <span class="muted">{{ r.rule.validity_note }}</span></p>
+  {% if r.rule.exceptions %}<p><b>Exceptions / conditions :</b></p><ul>{% for e in r.rule.exceptions %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  <details><summary>Applicabilité au fonds</summary><ul>{% for n in r.applicability.notes %}<li>{{ n }}</li>{% endfor %}</ul></details>
+</div>
+</div>
+
+{% if out %}
+<h2>Détail du calcul</h2>
+<ol class="trace">
+{% for t in out.trace %}
+<li class="k-{{ t.kind }}"><span class="val">{{ t.value or '' }}</span><span class="lbl">{{ t.label }}</span>{% if t.expression %}<div class="expr">{{ t.expression }}</div>{% endif %}{% if t.refs %}<div class="muted small">Réf. : {{ t.refs[:20]|join(', ') }}{% if t.refs|length > 20 %}…{% endif %}</div>{% endif %}</li>
+{% endfor %}
+</ol>
+{% if out.missing %}<h3>Données manquantes (ratio non calculable)</h3><ul class="small">{% for m in out.missing %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+{% if out.hypotheses %}<h3>Hypothèses et points de vigilance</h3><ul class="small">{% for h in out.hypotheses %}<li>{{ h }}</li>{% endfor %}</ul>{% endif %}
+
+{% if out.details %}
+<h2>Résultat par entité / ligne</h2>
+<div class="table-wrap" style="max-height:480px"><table>
+<thead><tr><th>Clé</th><th>Libellé</th><th class="num">Montant</th><th class="num">Poids / ratio</th><th>Lignes sources</th><th>Informations</th></tr></thead>
+<tbody>{% for d in out.details[:300] %}<tr><td class="mono small">{{ d.key }}</td><td>{{ d.label }}</td><td class="num">{{ d.amount|amt(r.currency) }}</td><td class="num">{{ d.weight|pct(4) }}</td><td class="small">{{ d.line_ids[:12]|join(', ') }}{% if d.line_ids|length > 12 %}…{% endif %}</td><td class="small">{% for k, v in d.extra.items() %}{{ k }} : {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+
+<h2>Données sources utilisées ({{ used|length }} ligne(s))</h2>
+<div class="table-wrap" style="max-height:480px"><table>
+<thead><tr><th>Réf.</th><th>Fichier / ligne</th><th>Libellé</th><th>ISIN</th><th>Type</th><th>Devise</th><th class="num">Valeur totale</th><th>Émetteur</th><th>Type émetteur</th><th>Groupe</th><th>Marché</th></tr></thead>
+<tbody>{% for p in used[:500] %}<tr>
+<td class="mono small">{{ p.line_id }}</td><td class="small">{{ p.source_file }} l.{{ p.source_row }}</td><td>{{ p.name }}</td><td class="mono small">{{ p.isin or '' }}</td><td class="small">{{ p.instrument_label }}</td><td>{{ p.currency }}</td><td class="num">{{ p.total_market_value|amt(r.currency) }}</td>
+<td class="small">{{ p.issuer_name or '' }}<br><span class="muted">{{ p.issuer_source or '' }}</span></td><td class="small">{{ issuer_types.get(p.issuer_type, p.issuer_type) if p.issuer_type else '—' }}</td><td class="small">{{ p.group_name or p.group_id or '—' }}</td><td class="small">{{ p.market_name or '' }}<br><span class="muted">{{ p.market_eligibility or 'non qualifié' }}</span></td>
+</tr>{% endfor %}</tbody></table></div>
+{% endif %}
+
+<h2>Traçabilité</h2>
+<div class="card small mono">
+Actif net : {{ r.nav|amt(r.currency) }} – {{ r.nav_source.file }} / colonne {{ r.nav_source.column }} / ligne(s) {{ r.nav_source.rows }}<br>
+Empreinte des données (snapshot) : {{ r.snapshot_sha }}<br>
+Empreinte de l'entrée de calcul : {{ r.input_sha }}<br>
+Empreinte du résultat : {{ r.fingerprint }}<br>
+Version de règle : {{ r.rule.id }} v{{ r.rule.version }} ({{ r.rule.sha256 }})<br>
+Moteur : {{ r.engine_version }}
+</div>
+{% if history %}
+<h3>Historique de ce ratio pour le fonds</h3>
+<div class="table-wrap"><table><thead><tr><th>Résultat</th><th>Calcul</th><th>Date des données</th><th>Version de règle</th><th>Statut</th><th>Empreinte</th></tr></thead><tbody>
+{% for h in history %}<tr><td><a href="/result/{{ h.id }}">#{{ h.id }}</a></td><td>#{{ h.run_id }}</td><td>{{ h.data_date|date }}</td><td>v{{ h.rule_version }}</td><td>{{ badge(h.status) }}</td><td class="mono small">{{ h.fingerprint|short(16) }}</td></tr>{% endfor %}
+</tbody></table></div>
+<p class="muted small">Deux empreintes identiques signifient un résultat identique (mêmes données, mêmes règles, même moteur).</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Fonds{% endblock %}
+{% block content %}
+<h1>Liste des fonds</h1>
+<div class="table-wrap"><table>
+<thead><tr><th>Fonds</th><th>Identifiant</th><th>Classes</th><th>Date des données</th><th>Fichiers sources utilisés</th><th>Dernière mise à jour des fichiers</th><th>État des données</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr>
+ <td><a href="/fund/{{ r.fund.fund_id }}"><b>{{ r.fund.name }}</b></a><br><span class="muted small">{{ r.fund.umbrella or '' }}</span></td>
+ <td class="small">{{ r.fund.fund_id }}<br><span class="muted">{{ r.identifier }}</span></td>
+ <td class="small">{% for s in r.shares %}{{ s.code }} – {{ s.isin }}<br>{% endfor %}</td>
+ <td>{{ r.snap.data_date|date if r.snap else '—' }}</td>
+ <td class="small">{% for f in r.files %}{{ f.file_name }} <span class="muted">({{ f.file_type }})</span><br>{% else %}<span class="muted">aucun</span>{% endfor %}</td>
+ <td class="small">{% for f in r.files %}{{ f.mtime|date }}<br>{% endfor %}</td>
+ <td>{% if r.snap %}<span class="badge s-{{ 'CONFORME' if r.snap.status == 'actif' else 'DEPASSEMENT' }}">{{ 'Exploitable' if r.snap.status == 'actif' else 'Bloquant' }}</span><br><span class="mono muted">{{ r.snap.sha256|short }}</span>{% else %}<span class="badge s-NON_CALCULABLE">Aucune donnée</span>{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+<p class="muted small">Les caractéristiques des fonds (cadre réglementaire, dérogations, méthode de risque global, seuils d'alerte internes) se paramètrent dans <span class="mono">config/funds/*.yaml</span>.</p>
+{% endblock %}

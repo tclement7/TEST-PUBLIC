@@ -1,0 +1,35 @@
+id: LU-UCITS-43-1-CONTREPARTIE-OTC
+version: 1
+name: "Risque de contrepartie sur dérivés de gré à gré"
+category: derives
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Le risque de contrepartie d'un OPCVM dans une transaction sur instruments dérivés de gré à gré ne peut excéder
+  10 % de ses actifs lorsque la contrepartie est un établissement de crédit éligible, ou 5 % dans les autres cas.
+formula: "Pour chaque contrepartie c : w(c) = Σ valeurs de marché positives des dérivés de gré à gré avec c / actif net."
+calculator: counterparty_exposure
+params:
+  base: net_assets
+  amount_field: market_value
+  key_field: issuer_id
+  credit_institution_types: [etablissement_credit_ue, etablissement_credit_equivalent]
+  filters:
+    - {field: instrument_type, op: in, value: [derivative_otc]}
+limits:
+  - {key: max_credit_institution, label: "Contrepartie établissement de crédit", operator: "<=", value: "0.10"}
+  - {key: max_other, label: "Autre contrepartie", operator: "<=", value: "0.05"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Les garanties reçues (collatéral) ne sont pas prises en compte : données non disponibles dans les fichiers actuels."
+  - "Les futures cotés compensés ne sont pas des dérivés de gré à gré."
+required_data: [net_assets, positions.market_value, positions.issuer_id, positions.issuer_type]
+sources:
+  - {source: LU-LOI-2010, article: "art. 43 §1", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 52 §1", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

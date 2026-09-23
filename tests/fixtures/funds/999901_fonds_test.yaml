@@ -1,0 +1,26 @@
+# Fonds FICTIF utilisé par les tests automatisés.
+fund_id: "999901"
+name: "SICAV TEST - FONDS TEST"
+umbrella: "SICAV TEST"
+currency: EUR
+identifiers:
+  sub_fund_code: "999901"
+share_classes:
+  - {code: A, isin: LU000TESTA15}
+  - {code: B, isin: LU000TESTB11}
+aliases:
+  efa_standard: [TST]
+profiles:
+  - valid_from: "2000-01-01"
+    valid_to: null
+    source: "Jeu de test"
+    attributes:
+      legal_framework: UCITS
+      domicile: LU
+      fund_type: standard
+      global_exposure_method: commitment
+      derogation_art45_sovereign: false
+      derogation_art44_index: false
+internal_alerts:
+  LU-UCITS-43-5-GROUPE-20: {max_weight: "0.14", validated_by: "Jeu de test", validated_on: "2026-06-30"}
+rules_exclude: {}

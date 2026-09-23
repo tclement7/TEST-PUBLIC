@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Fichiers{% endblock %}
+{% block content %}
+<div class="row" style="justify-content:space-between"><h1>Fichiers &amp; anomalies</h1><form method="post" action="/scan"><button class="btn">Scanner le dossier</button></form></div>
+<p class="muted small">Dossier source (lecture seule) : <span class="mono">{{ source_dir }}</span>. Chaque fichier est identifié par son empreinte SHA-256 : un contenu déjà traité n'est jamais retraité ; une nouvelle version d'un fichier crée un nouveau jeu de données sans effacer l'ancien.</p>
+{% if dataset_ano %}
+<h2>Jeux de données incomplets</h2>
+<div class="table-wrap"><table><thead><tr><th>Fonds</th><th>Date</th><th>Code</th><th>Message</th></tr></thead><tbody>
+{% for a in dataset_ano %}<tr><td>{{ a.fund_id or '' }}</td><td>{{ a.data_date|date }}</td><td class="mono">{{ a.code }}</td><td>{{ a.message }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+<h2>Fichiers détectés</h2>
+<div class="table-wrap"><table><thead><tr><th>Fichier</th><th>Type</th><th>Fonds</th><th>Date des données</th><th>Modifié le</th><th>Détecté le</th><th>Statut</th><th>Colonnes</th><th>Anomalies</th></tr></thead><tbody>
+{% for f in rows %}
+{% set imp = imports.get(f.id) %}
+{% set meta = jsonutil.loads(imp.meta_json) if imp else none %}
+{% set anos = (ano.get(('import', imp.id), []) if imp else []) + ano.get(('file', f.id), []) %}
+<tr>
+<td><b>{{ f.file_name }}</b><br><span class="mono muted small">{{ f.sha256|short(16) }}</span></td>
+<td>{{ f.file_type or '—' }}</td><td>{{ f.fund_id or '—' }}</td><td>{{ f.data_date|date }}</td><td class="small">{{ f.mtime|date }}</td><td class="small">{{ f.detected_at|date }}</td>
+<td><span class="badge s-{{ {'traite':'CONFORME','erreur':'DEPASSEMENT','illisible':'DEPASSEMENT','non_reconnu':'NON_APPLICABLE'}.get(f.status, 'NON_CALCULABLE') }}">{{ f.status }}</span><br><span class="small muted">{{ f.message or '' }}</span></td>
+<td class="small">{% if meta %}{{ meta.column_map|length }} reconnue(s){% if meta.missing_required %}<br><b style="color:var(--ko)">manquantes : {{ meta.missing_required|join(', ') }}</b>{% endif %}{% if meta.missing_optional %}<br><span class="muted">facultatives absentes : {{ meta.missing_optional|join(', ') }}</span>{% endif %}{% endif %}</td>
+<td class="small">{% for a in anos[:8] %}<div><b>{{ a.severity }}</b> {{ a.code }} – {{ a.message }}{% if a.row_ref %} ({{ a.row_ref }}){% endif %}</div>{% endfor %}{% if anos|length > 8 %}… {{ anos|length - 8 }} autre(s){% endif %}</td>
+</tr>
+{% else %}<tr><td colspan="9" class="muted">Aucun fichier détecté.</td></tr>{% endfor %}
+</tbody></table></div>
+<h2>Jeux de données (snapshots)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Fonds</th><th>Date</th><th>Empreinte</th><th>Statut</th><th>Créé le</th></tr></thead><tbody>
+{% for s in snaps %}<tr><td>{{ s.id }}</td><td>{{ s.fund_id }}</td><td>{{ s.data_date|date }}</td><td class="mono small">{{ s.sha256|short(16) }}</td><td>{{ s.status }}</td><td class="small">{{ s.created_at|date }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

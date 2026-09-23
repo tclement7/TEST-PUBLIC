@@ -1,0 +1,4 @@
+marche;eligibilite;statut;source;commentaire
+PA (RT) - Euronext Paris;marche_reglemente_ue;valide;Jeu de test fictif;
+MI (RT) - Milan SE;marche_reglemente_ue;valide;Jeu de test fictif;
+HORS COTE;non_eligible;valide;Jeu de test fictif;

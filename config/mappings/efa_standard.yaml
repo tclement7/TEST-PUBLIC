@@ -1,0 +1,160 @@
+# Profil de mapping : extractions CSV de l'administrateur (format "ffxxx1_<ALIAS>_<AAAA_MM_JJ>.csv")
+# Toute modification de ce fichier doit s'accompagner d'une incrémentation de "version".
+id: efa_standard
+version: 1
+description: "Extractions administrateur de fonds (positions ffpos, actif net ffnav, passif fflia, changes ffcur, mouvements ffmov)"
+
+# Types de fichiers nécessaires pour constituer un jeu de données exploitable
+required_file_types: [positions, nav]
+
+defaults:
+  number: {decimal: ".", thousands: ""}
+  date_formats: ["%d/%m/%Y", "%Y-%m-%d"]
+
+file_types:
+
+  positions:
+    filename_pattern: '^ffpos1_(?P<fund_alias>[A-Za-z0-9]+)_(?P<date>\d{4}_\d{2}_\d{2})\.(csv|xlsx|xls)$'
+    filename_date_format: "%Y_%m_%d"
+    date_field: valuation_date
+    fund_field: sub_fund_code
+    columns:
+      fund_code:            {source: [Fund_code], required: true}
+      fund_name:            {source: [Fund_Long_Name]}
+      sub_fund_code:        {source: [Sub-Fund_Code], required: true}
+      sub_fund_name:        {source: [Sub-Fund_long_name]}
+      fund_currency:        {source: [Sub-Fund_ccy], required: true}
+      valuation_date:       {source: [Valuation_date], type: date, required: true}
+      instrument_code:      {source: [Instr_code], required: true}
+      src_category:         {source: [Instr_Category], required: true}
+      name:                 {source: [Instr_long_name], required: true}
+      sector_code:          {source: [Eco_sect_code], null_values: ["-1", ""]}
+      country:              {source: [Geo_sect_code], null_values: ["-1", ""]}
+      account_code:         {source: [Acc_sort_code], required: true}
+      currency:             {source: [Instr_evaluation_ccy], required: true}
+      price_expression:     {source: [Price_expr]}
+      maturity_date:        {source: [Maturity_date], type: date}
+      isin:                 {source: [ISIN], null_values: ["-1", ""]}
+      stock_type:           {source: [Stock_Type], required: true}
+      line_status:          {source: [Line_status]}
+      price:                {source: [Price], type: decimal}
+      market_value:         {source: [Market_Value], type: decimal, required: true}
+      market_value_local:   {source: [Market_Value_in_Instr_CCY], type: decimal}
+      quantity:             {source: [Quantity], type: decimal}
+      accrued_interest:     {source: [Accrued_Interest], type: decimal}
+      total_market_value:   {source: [Total_Market_Value], type: decimal, required: true}
+      weight_reported_pct:  {source: ["Market_Val+Accr_Int_NAV_%"], type: decimal}
+      market_name:          {source: [Market name], null_values: ["", "-1"]}
+      security_type_code:   {source: [type_valeur], null_values: ["-1", ""]}
+      counterparty:         {source: [contrepartie], null_values: [""]}
+      contract_size:        {source: [Convers_factor], type: decimal, null_values: [""]}
+      underlying_category:  {source: [Categ_sous_jacent], null_values: [""]}
+      underlying_code:      {source: [Code_sous_jacent], null_values: [""]}
+      underlying_name:      {source: [underlying_Long_Name], null_values: [""]}
+
+    # Classification des lignes en types canoniques.
+    # Règles évaluées dans l'ordre ; la première qui correspond s'applique.
+    # balance_sheet: la ligne fait partie de l'actif net (sinon : engagement hors bilan).
+    classification:
+      - when: {src_category: VMOB, security_type_code: "1010"}
+        instrument_type: equity
+        label: "Action"
+      - when: {src_category: VMOB, security_type_code: "1383"}
+        instrument_type: equity
+        label: "Action – société foncière cotée (REIT)"
+      - when: {src_category: VMOB, security_type_code: "1090"}
+        instrument_type: equity
+        label: "Certificat représentatif d'actions"
+      - when: {src_category: VMOB, security_type_code: "2090"}
+        instrument_type: debt_security
+        label: "Titre de créance – bon du Trésor"
+      - when: {src_category: VMOB, security_type_code: "2171"}
+        instrument_type: structured_certificate
+        label: "Certificat structuré"
+      - when: {src_category: VMOB, security_type_code: "1341"}
+        instrument_type: fund_unit
+        label: "Parts / actions d'OPC"
+      - when: {src_category: CPON}
+        instrument_type: receivable
+        label: "Coupons / dividendes à recevoir"
+      - when: {src_category: TRES, account_code: TR500100, stock_type: AD1}
+        instrument_type: cash_account
+        label: "Compte courant bancaire"
+      - when: {src_category: TRES, account_code: TR500100, stock_type: HOBI}
+        instrument_type: cash_pending
+        label: "Intérêts courus sur comptes (hors bilan)"
+        balance_sheet: false
+      - when: {src_category: TRES, account_code: TR500400}
+        instrument_type: cash_account_other
+        label: "Compte de trésorerie TR500400 (nature exacte à confirmer)"
+      - when: {src_category: TRES, account_code: TR060100}
+        instrument_type: margin_deposit
+        label: "Appels de marge sur futures"
+      - when: {src_category: TRES, account_code_regex: '^TR2'}
+        instrument_type: fee_accrual
+        label: "Frais à payer / à recevoir"
+      - when: {src_category: FUTU, stock_type: AD1}
+        instrument_type: derivative_listed_mtm
+        label: "Future coté – résultat latent"
+      - when: {src_category: FUTU, stock_type: HOBI}
+        instrument_type: derivative_listed_commitment
+        label: "Future coté – engagement (hors bilan)"
+        balance_sheet: false
+
+  nav:
+    filename_pattern: '^ffnav1_(?P<fund_alias>[A-Za-z0-9]+)_(?P<date>\d{4}_\d{2}_\d{2})\.(csv|xlsx|xls)$'
+    filename_date_format: "%Y_%m_%d"
+    date_field: valuation_date
+    fund_field: sub_fund_code
+    columns:
+      sub_fund_code:        {source: [Sub-fund_code], required: true}
+      share_code:           {source: [Share_code], required: true}
+      valuation_date:       {source: [Valuation_date], type: date, required: true}
+      fund_currency:        {source: [Sub-fund_currency], required: true}
+      share_net_assets:     {source: [Net_assets_share_type], type: decimal, required: true}
+      shares_outstanding:   {source: [Numbre_of_Shares_outstanding], type: decimal}
+      nav_per_share:        {source: [NAV_share], type: decimal}
+      share_isin:           {source: [Isin_code], null_values: ["", "-1"]}
+      sub_fund_name:        {source: [Sub_fund_long_name]}
+      total_net_assets:     {source: [Total_Net_Assets], type: decimal, required: true}
+
+  fx:
+    filename_pattern: '^ffcur1_(?P<fund_alias>[A-Za-z0-9]+)_(?P<date>\d{4}_\d{2}_\d{2})\.(csv|xlsx|xls)$'
+    filename_date_format: "%Y_%m_%d"
+    date_field: quote_date
+    columns:
+      quote_date:           {source: [Cotation_date], type: date, required: true}
+      base_currency:        {source: [Fixing_currency], required: true}
+      currency:             {source: [Currency_code], required: true}
+      rate:                 {source: [Exchange_rate], type: decimal, required: true}
+      quotity:              {source: [Quotity], type: decimal, required: true}
+
+  liabilities:
+    filename_pattern: '^fflia1_(?P<fund_alias>[A-Za-z0-9]+)_(?P<date>\d{4}_\d{2}_\d{2})\.(csv|xlsx|xls)$'
+    filename_date_format: "%Y_%m_%d"
+    date_field: valuation_date
+    fund_field: sub_fund_code
+    columns:
+      sub_fund_code:        {source: [Sub-Fund_Code], required: true}
+      valuation_date:       {source: [Valuation_date], type: date, required: true}
+      share_code:           {source: [Share_code]}
+      item_code:            {source: [Code_poste]}
+      item_label:           {source: [Code_poste_libelle_long]}
+      item_category:        {source: [Categorie_poste]}
+      amount:               {source: [Montant_passif], type: decimal, required: true}
+
+  movements:
+    filename_pattern: '^ffmov1_(?P<fund_alias>[A-Za-z0-9]+)_(?P<date>\d{4}_\d{2}_\d{2})\.(csv|xlsx|xls)$'
+    filename_date_format: "%Y_%m_%d"
+    date_field: accounting_date
+    date_consistency: false          # les mouvements peuvent porter des dates comptables différentes
+    fund_field: sub_fund_code
+    columns:
+      sub_fund_code:        {source: [S_fund], required: true}
+      instrument_code:      {source: [Instr_code]}
+      name:                 {source: [Instr_long_name]}
+      isin:                 {source: [ISIN], null_values: ["-1", ""]}
+      transaction:          {source: [Transaction_name_new]}
+      accounting_date:      {source: [Accnt_date], type: date, required: true}
+      value_date:           {source: [Value_date], type: date}
+      quantity:             {source: [Quantity], type: decimal}

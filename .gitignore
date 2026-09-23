@@ -1,0 +1,18 @@
+# Données financières : ne jamais versionner
+data/
+archive/
+exports/
+logs/
+*.db
+*.sqlite
+# Référentiels locaux contenant des positions / émetteurs réels
+config/referentiels/local/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/

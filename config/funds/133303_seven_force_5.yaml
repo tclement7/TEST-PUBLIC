@@ -1,0 +1,33 @@
+# Fiche fonds. Les caractéristiques sont versionnées (profiles) : une modification = nouvelle entrée
+# avec valid_from, sans écraser la précédente.
+# Une valeur "null" signifie "non renseigné" : les règles qui en dépendent sont signalées "À confirmer".
+fund_id: "133303"
+name: "SEVEN UCITS - SEVEN FORCE 5"
+umbrella: "SEVEN UCITS"
+currency: EUR
+identifiers:
+  sub_fund_code: "133303"       # code administrateur, présent dans les fichiers
+share_classes:
+  - {code: C1, isin: LU1229132797}
+  - {code: C2, isin: LU1229132441}
+aliases:
+  efa_standard: [SF5]           # alias présent dans le nom des fichiers
+
+profiles:
+  - valid_from: "2000-01-01"
+    valid_to: null
+    source: "Échange avec la société de gestion du 23/09/2026 (fonds UCITS)"
+    attributes:
+      legal_framework: UCITS
+      domicile: LU                          # déduit des ISIN LU des classes d'actions et du dépositaire — à confirmer
+      fund_type: null                        # standard / indiciel / nourricier / monétaire… — à renseigner (prospectus)
+      global_exposure_method: null           # commitment / var_absolute / var_relative — à renseigner (prospectus)
+      derogation_art45_sovereign: null       # dérogation "100 % émetteur public" autorisée ? true / false — à renseigner
+      derogation_art44_index: null           # fonds indiciel bénéficiant de l'art. 44 ? true / false — à renseigner
+
+# Seuils d'alerte internes ("proche de la limite"), à renseigner et faire valider.
+# Format :  RULE_ID: {limit_key: "0.095", validated_by: "...", validated_on: "AAAA-MM-JJ"}
+internal_alerts: {}
+
+# Règles exclues pour ce fonds (motif obligatoire) ou règles statutaires additionnelles (répertoire referentiel/rules/…)
+rules_exclude: {}

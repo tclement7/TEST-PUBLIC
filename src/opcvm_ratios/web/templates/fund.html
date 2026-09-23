@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, gauge %}
+{% block title %}{{ fund.name if fund else fund_id }}{% endblock %}
+{% block content %}
+<div class="row" style="justify-content:space-between">
+  <div><h1>{{ fund.name if fund else fund_id }}</h1>
+  <div class="muted">{{ fund_id }}{% if snap %} · données au <b>{{ snap.data_date|date }}</b> · actif net <b>{{ snap.nav.total|amt(snap.currency) }}</b>{% endif %}{% if run_id %} · calcul #{{ run_id }}{% endif %}</div></div>
+  <div class="row">
+    {% if runs|length > 1 %}<form method="get"><select name="run" onchange="this.form.submit()">{% for r in runs %}<option value="{{ r }}" {{ 'selected' if r == run_id }}>Calcul #{{ r }}</option>{% endfor %}</select></form>{% endif %}
+    {% if run_id %}
+    <form method="post" action="/exports"><input type="hidden" name="run_id" value="{{ run_id }}"><input type="hidden" name="funds" value="{{ fund_id }}"><input type="hidden" name="fmt" value="pdf"><button class="btn alt">PDF</button></form>
+    <form method="post" action="/exports"><input type="hidden" name="run_id" value="{{ run_id }}"><input type="hidden" name="funds" value="{{ fund_id }}"><input type="hidden" name="fmt" value="xlsx"><button class="btn alt">Excel</button></form>
+    {% endif %}
+  </div>
+</div>
+<div class="kpis">
+  <div class="kpi ko"><div class="n">{{ counts.DEPASSEMENT + counts.CONFLIT_REGLES }}</div><div class="l">dépassements / conflits</div></div>
+  <div class="kpi tbc"><div class="n">{{ counts.A_CONFIRMER }}</div><div class="l">à confirmer (dont {{ counts.indicative_breach }} dépassement(s) indicatif(s))</div></div>
+  <div class="kpi near"><div class="n">{{ counts.PROCHE_LIMITE }}</div><div class="l">proches de la limite</div></div>
+  <div class="kpi ok"><div class="n">{{ counts.CONFORME }}</div><div class="l">conformes</div></div>
+  <div class="kpi nc"><div class="n">{{ counts.NON_CALCULABLE }}</div><div class="l">non calculables</div></div>
+  <div class="kpi"><div class="n">{{ counts.NON_APPLICABLE }}</div><div class="l">non applicables</div></div>
+</div>
+{% for cat, items in cats.items() %}
+<h2>{{ cat|cat }}</h2>
+<div class="table-wrap"><table>
+<thead><tr><th style="width:26%">Ratio</th><th>Contrôle</th><th class="num">Valeur calculée</th><th class="num">Limite</th><th class="num">Marge</th><th>Position</th><th>Statut</th><th>Source</th></tr></thead>
+<tbody>
+{% for r in items %}
+ {% set lims = r.limits if r.limits else [none] %}
+ {% for lim in lims %}
+ <tr>
+  {% if loop.first %}<td rowspan="{{ lims|length }}"><a href="/result/{{ r._id }}"><b>{{ r.rule.name }}</b></a><br><span class="muted small mono">{{ r.rule.id }} v{{ r.rule.version }}</span></td>{% endif %}
+  {% if lim %}
+  <td class="small">{{ lim.label }}</td>
+  <td class="num"><b>{{ limval(lim) }}</b></td>
+  <td class="num">{{ lim.operator|op }} {{ limval({'value': lim.limit, 'unit': lim.unit}) }}</td>
+  <td class="num">{{ limval(lim, 'margin') }}</td>
+  <td>{{ gauge(lim) }}</td>
+  {% else %}<td colspan="5" class="muted small">{{ (r.reasons or [])|join(' ; ') }}</td>{% endif %}
+  {% if loop.first %}<td rowspan="{{ lims|length }}">{{ badge(r.status) }}{% if r.status == 'A_CONFIRMER' %}<div class="ind">indicatif : {{ r.indicative_status|status }}</div>{% endif %}</td>
+  <td rowspan="{{ lims|length }}" class="small">{% for s in r.rule.sources %}{{ s.reference or s.source_id }} {{ s.article }}{% if s.confidence != 'confirme' %} <span class="muted">(à confirmer)</span>{% endif %}<br>{% endfor %}</td>{% endif %}
+ </tr>
+ {% endfor %}
+{% endfor %}
+</tbody></table></div>
+{% else %}
+<div class="card muted">Aucun résultat pour ce fonds. Lancez un contrôle depuis le tableau de bord.</div>
+{% endfor %}
+{% if attrs is not none %}
+<h2>Caractéristiques du fonds utilisées</h2>
+<div class="card small">{% for k, v in attrs.items() %}<b>{{ k }}</b> : {% if v is none %}<span class="badge s-A_CONFIRMER">non renseigné</span>{% else %}{{ v }}{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}
+<div class="muted">Les caractéristiques non renseignées rendent l'applicabilité de certaines règles indéterminée (statut « À confirmer »). À compléter dans la fiche fonds.</div></div>
+{% endif %}
+{% if anomalies %}
+<h2>Contrôles de cohérence des données</h2>
+<div class="table-wrap"><table><thead><tr><th>Gravité</th><th>Code</th><th>Message</th><th>Réf.</th></tr></thead><tbody>
+{% for a in anomalies %}<tr><td><span class="badge s-{{ {'bloquante':'DEPASSEMENT','avertissement':'A_CONFIRMER','info':'NON_APPLICABLE'}[a.severity] }}">{{ a.severity }}</span></td><td class="mono">{{ a.code }}</td><td>{{ a.message }}</td><td class="small">{{ a.row_ref or '' }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endblock %}

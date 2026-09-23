@@ -1,0 +1,37 @@
+id: LU-UCITS-42-3-EXPOSITION-GLOBALE-ENGAGEMENT
+version: 1
+name: "Exposition globale sur dérivés – méthode de l'engagement"
+category: derives
+framework: UCITS
+jurisdiction: LU
+definition: "Le risque global lié aux instruments dérivés ne peut excéder la valeur nette totale du portefeuille de l'OPCVM."
+formula: "w = Σ |engagement de chaque dérivé| / actif net (brut : sans compensation ni couverture) ; contrôle w ≤ 100 %."
+calculator: aggregate_filter
+params:
+  base: net_assets
+  amount_field: market_value
+  amount_transform: abs
+  filters:
+    - {field: instrument_type, op: in, value: [derivative_listed_commitment, derivative_otc_commitment]}
+  warn_if_types_present:
+    structured_certificate: "Présence de certificats structurés : les dérivés éventuellement incorporés ne sont pas inclus dans l'engagement"
+  assumptions:
+    - "Engagement = valeur d'engagement hors bilan fournie par l'administrateur (lignes HOBI), convertie en devise du fonds"
+    - "Calcul brut, sans compensation ni couverture : majorant de l'engagement réglementaire"
+limits:
+  - {key: total, label: "Engagement brut / actif net", operator: "<=", value: "1.00"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+    - {field: global_exposure_method, op: eq, value: commitment}
+exceptions:
+  - "Non applicable aux fonds dont le risque global est mesuré par la VaR."
+required_data: [net_assets, positions.market_value]
+sources:
+  - {source: LU-LOI-2010, article: "art. 42 §3", confidence: a_confirmer}
+  - {source: ESMA-10-788, article: "méthode de l'engagement", confidence: a_confirmer}
+  - {source: CSSF-CIRC-11-512, article: "", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

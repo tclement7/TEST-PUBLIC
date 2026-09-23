@@ -1,0 +1,42 @@
+id: LU-UCITS-43-5-GROUPE-20
+version: 1
+name: "Valeurs mobilières d'un même groupe – 20 %"
+category: concentration_groupe
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Les sociétés regroupées aux fins de la consolidation des comptes sont considérées comme une seule entité ;
+  un OPCVM peut investir cumulativement jusqu'à 20 % de ses actifs dans des valeurs mobilières et instruments
+  du marché monétaire d'un même groupe.
+formula: "Pour chaque groupe g : w(g) = Σ VM et IMM émis par les entités de g / actif net ; contrôle max w(g) ≤ 20 %."
+calculator: weight_by_key
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: group_id
+  key_fallback: issuer_id
+  key_fallback_note: "Groupe non renseigné : l'émetteur est considéré comme son propre groupe"
+  filters:
+    - field: instrument_type
+      op: in
+      value: [equity, debt_security, money_market_instrument, structured_certificate]
+    - field: issuer_type
+      op: not_in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: include
+      missing_note: "Type d'émetteur non renseigné : ligne conservée dans le calcul (approche prudente)"
+limits:
+  - {key: max_weight, label: "Poids maximal d'un groupe", operator: "<=", value: "0.20"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Les émetteurs publics sont exclus (ils ne constituent pas un groupe de sociétés)."
+required_data: [net_assets, positions.total_market_value, positions.group_id]
+sources:
+  - {source: LU-LOI-2010, article: "art. 43 §5", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 52 §5", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

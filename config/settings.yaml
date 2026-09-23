@@ -1,0 +1,32 @@
+# Paramétrage de l'application. Les chemins relatifs sont résolus depuis la racine du projet.
+# Sous Windows, un chemin réseau ou local s'écrit par exemple : 'D:\\Donnees\\OPCVM' ou '\\\\serveur\\partage\\OPCVM'
+
+source_dir: data/source            # dossier déposé par l'administrateur (lu en lecture seule)
+archive_dir: data/archive          # copie horodatée et hachée de chaque fichier traité
+db_path: data/opcvm_ratios.db
+exports_dir: data/exports
+logs_dir: data/logs
+
+mappings_dir: config/mappings
+funds_dir: config/funds
+referentiel_dir: referentiel       # règles réglementaires (YAML versionnés)
+issuers_file: config/referentiels/local/emetteurs.csv   # local, non versionné (contient les lignes détenues)
+markets_file: config/referentiels/marches.csv
+
+# Délai minimal (secondes) depuis la dernière modification d'un fichier avant traitement
+# (évite de lire un fichier en cours de copie)
+min_file_age_seconds: 5
+
+# Tolérances des contrôles de cohérence (écarts purement techniques, pas des seuils réglementaires)
+tolerances:
+  nav_reconciliation_abs: "1.00"     # écart max (devise du fonds) entre Σ lignes de bilan et actif net publié
+  weight_reported_abs: "0.0001"      # écart max (en points de %) entre poids publié et poids recalculé
+  price_quantity_rel: "0.005"        # écart relatif max entre quantité × prix et valeur de marché locale
+  fx_rel: "0.0001"                   # écart relatif max entre valeur locale / cours et valeur en devise du fonds
+
+web:
+  host: 127.0.0.1                    # écoute locale uniquement ; ne modifier qu'après validation
+  port: 8765
+
+report:
+  company_name: "Société de gestion"  # à personnaliser

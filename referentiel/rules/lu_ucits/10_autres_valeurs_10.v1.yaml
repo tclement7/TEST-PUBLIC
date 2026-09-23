@@ -1,0 +1,45 @@
+id: LU-UCITS-41-2-A-AUTRES-VALEURS-10
+version: 1
+name: "Valeurs mobilières et IMM non éligibles – 10 %"
+category: actifs_eligibles
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Un OPCVM peut placer au maximum 10 % de ses actifs dans des valeurs mobilières et instruments du marché
+  monétaire autres que ceux visés à l'article 41 §1 (notamment non admis à la cote ou non négociés sur un
+  marché réglementé éligible).
+formula: "w = Σ valeur des VM et IMM négociés hors marché éligible / actif net ; contrôle w ≤ 10 %."
+calculator: aggregate_filter
+params:
+  base: net_assets
+  amount_field: total_market_value
+  filters:
+    - field: instrument_type
+      op: in
+      value: [equity, debt_security, money_market_instrument, structured_certificate]
+    # IMM émis ou garantis par une autorité publique : éligibles hors marché réglementé (art. 41 §1 h) — à confirmer
+    - not_all:
+        - {field: instrument_type, op: in, value: [debt_security, money_market_instrument]}
+        - {field: issuer_type, op: in, value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]}
+      label: "Exclusion des IMM d'émetteurs publics (art. 41 §1 h)"
+    - field: market_eligibility
+      op: not_in
+      value: [marche_reglemente_ue, autre_marche_reglemente]
+      on_missing: not_calculable
+      missing_note: "Éligibilité du marché de cotation non déterminée (référentiel des marchés)"
+limits:
+  - {key: total, label: "Total VM / IMM non éligibles", operator: "<=", value: "0.10"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Les valeurs nouvellement émises (engagement d'admission à la cote dans l'année) ne sont pas identifiées."
+  - "Les marchés hors UE ne sont éligibles que s'ils sont prévus par les documents constitutifs."
+required_data: [net_assets, positions.total_market_value, positions.market_eligibility]
+sources:
+  - {source: LU-LOI-2010, article: "art. 41 §1 et §2 a)", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 50 §1 et §2 a)", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

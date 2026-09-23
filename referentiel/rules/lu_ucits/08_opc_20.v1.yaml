@@ -1,0 +1,31 @@
+id: LU-UCITS-46-1-OPC-20
+version: 1
+name: "Parts d'un même OPC – 20 %"
+category: opc
+framework: UCITS
+jurisdiction: LU
+definition: "Un OPCVM ne peut acquérir les parts d'un même OPCVM ou autre OPC pour plus de 20 % de ses actifs."
+formula: "Pour chaque OPC cible f : w(f) = Σ valeur des parts de f / actif net ; contrôle max w(f) ≤ 20 %."
+calculator: weight_by_key
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: issuer_id
+  filters:
+    - {field: instrument_type, op: in, value: [fund_unit]}
+limits:
+  - {key: max_weight, label: "Poids maximal d'un OPC cible", operator: "<=", value: "0.20"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Chaque compartiment d'un OPC à compartiments multiples est considéré comme un émetteur distinct (à confirmer)."
+  - "Les conditions d'investissement dans un autre compartiment de la même SICAV (art. 181 §8) ne sont pas contrôlées ici."
+required_data: [net_assets, positions.total_market_value, positions.issuer_id]
+sources:
+  - {source: LU-LOI-2010, article: "art. 46 §1", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 55 §1", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

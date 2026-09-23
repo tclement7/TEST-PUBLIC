@@ -1,0 +1,46 @@
+id: LU-UCITS-43-EMETTEUR-5-10-40
+version: 1
+name: "Dispersion par émetteur – règle 5/10/40"
+category: dispersion_emetteur
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Un OPCVM ne peut investir plus de 10 % de ses actifs en valeurs mobilières ou instruments du marché
+  monétaire d'une même entité ; la valeur totale des valeurs mobilières et instruments du marché monétaire
+  détenus auprès des émetteurs dans lesquels il investit plus de 5 % de ses actifs ne peut dépasser 40 %.
+formula: >
+  Pour chaque émetteur e : w(e) = Σ valeur de marché coupon couru inclus (valeurs mobilières et IMM émis par e)
+  / actif net. Contrôles : max w(e) ≤ 10 % ; Σ w(e) pour w(e) > 5 % ≤ 40 %.
+calculator: rule_5_10_40
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: issuer_id
+  threshold: "0.05"
+  filters:
+    - field: instrument_type
+      op: in
+      value: [equity, debt_security, money_market_instrument, structured_certificate]
+    - field: issuer_type
+      op: not_in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: include
+      missing_note: "Type d'émetteur non renseigné : ligne conservée dans le calcul (approche prudente)"
+limits:
+  - {key: max_weight, label: "Poids maximal d'un émetteur", operator: "<=", value: "0.10"}
+  - {key: sum_above_threshold, label: "Somme des émetteurs dépassant 5 %", operator: "<=", value: "0.40"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Émetteurs publics (art. 43 §3) et obligations garanties (art. 43 §4) : exclus de la règle et soumis à leurs propres limites. Les obligations garanties ne sont pas encore identifiées dans les données."
+  - "La limite de 40 % ne s'applique ni aux dépôts ni aux dérivés de gré à gré (art. 43 §2)."
+required_data: [net_assets, positions.total_market_value, positions.instrument_type, positions.issuer_id, positions.issuer_type]
+sources:
+  - {source: LU-LOI-2010, article: "art. 43 §1 et §2", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 52 §1 et §2", confidence: a_confirmer}
+  - {source: SGP-DECISION-2026-09-23, article: "Base = actif net", confidence: confirme}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

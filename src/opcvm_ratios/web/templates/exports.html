@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Exports{% endblock %}
+{% block content %}
+<h1>Exports PDF et Excel</h1>
+<form method="post" action="/exports" class="card">
+<div class="row">
+<label>Calcul <select name="run_id">{% for r in runs %}<option value="{{ r.id }}">#{{ r.id }} – {{ r.started_at|date }}</option>{% endfor %}</select></label>
+<label>Format <select name="fmt"><option value="pdf">Rapport PDF</option><option value="xlsx">Classeur Excel (formules)</option></select></label>
+</div>
+<p class="small"><b>Fonds</b> (aucune sélection = tous les fonds du calcul) :<br>
+{% for f in funds %}<label style="margin-right:14px"><input type="checkbox" name="funds" value="{{ f.fund_id }}"> {{ f.name }}</label>{% endfor %}</p>
+<button class="btn" {{ 'disabled' if not runs }}>Générer</button>
+</form>
+<p class="muted small">L'Excel contient les onglets Synthèse, Ratios, Calculs, Données sources, Référentiel réglementaire, Anomalies et Métadonnées. Les poids et ratios sont de vraies formules (SUMPRODUCT) recalculées à partir de l'onglet Données sources ; une colonne « Écart » compare chaque formule à la valeur du moteur.</p>
+<h2>Exports réalisés</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Par</th><th>Calcul</th><th>Format</th><th>Fichier</th><th>SHA-256</th></tr></thead><tbody>
+{% for e in past %}<tr><td>{{ e.id }}</td><td>{{ e.created_at|date }}</td><td>{{ e.created_by }}</td><td>#{{ e.run_id }}</td><td>{{ e.kind }}</td><td><a href="/exports/{{ e.id }}">{{ e.file_path.replace('\\', '/').split('/')[-1] }}</a></td><td class="mono small">{{ e.sha256|short(16) }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

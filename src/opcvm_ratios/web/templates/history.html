@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}
+{% block title %}Historique{% endblock %}
+{% block content %}
+<h1>Historique des contrôles</h1>
+<form method="get" class="card row">
+  <label>Fonds <select name="fund_id">{% for f in funds %}<option value="{{ f.fund_id }}" {{ 'selected' if f.fund_id == fund_id }}>{{ f.name }}</option>{% endfor %}</select></label>
+  <label>Ratio <select name="rule_id">{% for r in rule_ids %}<option {{ 'selected' if r == rule_id }}>{{ r }}</option>{% endfor %}</select></label>
+  <button class="btn alt">Afficher l'évolution</button>
+</form>
+{% if series %}
+<div class="table-wrap"><table><thead><tr><th>Date des données</th><th>Calcul</th><th>Version de règle</th><th class="num">Valeur</th><th class="num">Limite</th><th>Statut</th><th>Statut indicatif</th></tr></thead><tbody>
+{% for s in series %}<tr><td>{{ s.date|date }}</td><td><a href="/result/{{ s.id }}">#{{ s.run_id }}</a></td><td>v{{ s.version }}</td><td class="num">{{ limval({'value': s.value, 'unit': s.unit}) }}</td><td class="num">{{ limval({'value': s.limit, 'unit': s.unit}) }}</td><td>{{ badge(s.status) }}</td><td>{{ s.indicative|status }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+<h2>Calculs réalisés</h2>
+<div class="table-wrap"><table><thead><tr><th>Calcul</th><th>Date</th><th>Lancé par</th><th>Fonds</th><th class="num">Ratios</th><th class="num">Dépassements</th><th class="num">À confirmer</th><th class="num">Non calculables</th><th>Moteur</th><th>Référentiel</th><th>Statut</th></tr></thead><tbody>
+{% for x in runs %}<tr><td>#{{ x.run.id }}</td><td>{{ x.run.started_at|date }}</td><td>{{ x.run.triggered_by }}</td><td class="small">{% for f in x.funds %}<a href="/fund/{{ f }}?run={{ x.run.id }}">{{ f }}</a> {% endfor %}</td><td class="num">{{ x.n }}</td><td class="num">{{ x.counts.DEPASSEMENT }}</td><td class="num">{{ x.counts.A_CONFIRMER }}</td><td class="num">{{ x.counts.NON_CALCULABLE }}</td><td class="mono small">{{ x.run.engine_version }}</td><td class="mono small">{{ x.run.referentiel_sha|short }}</td><td>{{ x.run.status }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

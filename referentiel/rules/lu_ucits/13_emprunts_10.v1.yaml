@@ -1,0 +1,33 @@
+id: LU-UCITS-50-EMPRUNTS-10
+version: 1
+name: "Emprunts temporaires – 10 %"
+category: emprunts
+framework: UCITS
+jurisdiction: LU
+definition: "Un OPCVM peut emprunter jusqu'à 10 % de ses actifs, pour autant qu'il s'agisse d'emprunts temporaires."
+formula: "w = Σ |soldes débiteurs des comptes de trésorerie| / actif net ; contrôle w ≤ 10 %."
+calculator: aggregate_filter
+params:
+  base: net_assets
+  amount_field: total_market_value
+  amount_transform: negative_abs
+  filters:
+    - {field: instrument_type, op: in, value: [cash_account, cash_account_other]}
+  assumptions:
+    - "Les soldes débiteurs des comptes de trésorerie sont assimilés à des emprunts, sans compensation entre devises ni entre comptes"
+    - "Le caractère temporaire de l'emprunt n'est pas vérifiable à partir d'une seule date"
+limits:
+  - {key: total, label: "Emprunts / actif net", operator: "<=", value: "0.10"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Les prêts adossés (back-to-back) pour l'acquisition de devises ne sont pas des emprunts au sens de la règle."
+required_data: [net_assets, positions.total_market_value]
+sources:
+  - {source: LU-LOI-2010, article: "art. 50 §2 a)", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 83 §2 a)", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

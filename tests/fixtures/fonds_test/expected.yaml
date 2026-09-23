@@ -1,0 +1,70 @@
+# Résultats attendus pour le FONDS TEST (données fictives), calculés à la main.
+# Actif net = 100 000 000,00 € (ffnav1, colonne Total_Net_Assets) ; donc 1 000 000 € = 1 %.
+# Les valeurs sont des fractions de l'actif net (0.0842 = 8,42 %).
+# Statuts attendus lorsque TOUTES les règles sont validées (voir tests/integration/test_pipeline.py).
+
+nav: "100000000.00"
+data_date: "2026-06-30"
+
+rules:
+  LU-UCITS-43-EMETTEUR-5-10-40:
+    # Émetteurs (hors émetteurs publics, hors OPC) :
+    #   X = 8 420 000 -> 8,42 % ; Y = 6 000 000 + 3 720 000 = 9 720 000 -> 9,72 %
+    #   Z = 12 300 000 + 100 000 (coupon couru) = 12 400 000 -> 12,40 % ; W = 4,25 % ; V = 5,00 % ; Divers = 2,087 % chacun
+    # max = 12,40 % > 10 % -> dépassement
+    # Σ des émetteurs strictement > 5 % = 8,42 + 9,72 + 12,40 = 30,54 % (V à 5,00 % exactement n'est pas retenu)
+    values: {max_weight: "0.124", sum_above_threshold: "0.3054"}
+    status: DEPASSEMENT
+  LU-UCITS-43-3-EMETTEUR-PUBLIC-35:
+    # État français : 10 000 000 + 12 000 000 + 8 000 000 = 30 000 000 -> 30,00 % ≤ 35 %
+    values: {max_weight: "0.30"}
+    status: CONFORME
+  LU-UCITS-45-DEROGATION-EMETTEUR-PUBLIC:
+    # derogation_art45_sovereign = false dans la fiche fonds
+    status: NON_APPLICABLE
+  LU-UCITS-43-1-DEPOTS-20:
+    # Aucun dépôt à terme
+    values: {max_weight: "0"}
+    status: CONFORME
+  LU-UCITS-43-1-CONTREPARTIE-OTC:
+    # Aucun dérivé de gré à gré (futures cotés uniquement)
+    values: {max_credit_institution: "0", max_other: "0"}
+    status: CONFORME
+  LU-UCITS-43-2-COMBINE-20:
+    # Maximum : Z = 12,40 % (pas de dépôt ni de dérivé OTC)
+    values: {max_weight: "0.124"}
+    status: CONFORME
+  LU-UCITS-43-5-GROUPE-20:
+    # Groupe G = Y (9,72 %) + V (5,00 %) = 14,72 % ≤ 20 % mais > seuil d'alerte interne 14 % -> proche de la limite
+    values: {max_weight: "0.1472"}
+    status: PROCHE_LIMITE
+  LU-UCITS-46-1-OPC-20:
+    # OPCVM cible = 7 000 000 -> 7,00 %
+    values: {max_weight: "0.07"}
+    status: CONFORME
+  LU-UCITS-46-2-OPC-NON-OPCVM-30:
+    # L'OPC cible est un OPCVM -> 0 %
+    values: {total: "0"}
+    status: CONFORME
+  LU-UCITS-41-2-A-AUTRES-VALEURS-10:
+    # Seule W (4 250 000, marché « HORS COTE » non éligible) ; les BTF sont exemptés (IMM d'émetteur public)
+    values: {total: "0.0425"}
+    status: CONFORME
+  LU-UCITS-42-3-EXPOSITION-GLOBALE-ENGAGEMENT:
+    # |20 000 000| + |-5 000 000| = 25 000 000 -> 25,00 % ; hypothèses de calcul brut -> à confirmer
+    values: {total: "0.25"}
+    status: A_CONFIRMER
+    indicative_status: CONFORME
+  LU-UCITS-48-2-EMPRISE-CREANCES-10:
+    # Encours émis de Z non renseigné -> non calculable
+    status: NON_CALCULABLE
+  LU-UCITS-50-EMPRUNTS-10:
+    # Découvert -500 000 -> 0,50 % ; hypothèse (découvert = emprunt) -> à confirmer
+    values: {total: "0.005"}
+    status: A_CONFIRMER
+    indicative_status: CONFORME
+  LU-UCITS-LIQUIDITES-ACCESSOIRES-20:
+    # Solde créditeur 3 000 000 -> 3,00 % ; hypothèse sur la nature des comptes -> à confirmer
+    values: {total: "0.03"}
+    status: A_CONFIRMER
+    indicative_status: CONFORME

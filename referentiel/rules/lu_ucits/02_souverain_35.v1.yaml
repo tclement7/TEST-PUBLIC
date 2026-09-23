@@ -1,0 +1,41 @@
+id: LU-UCITS-43-3-EMETTEUR-PUBLIC-35
+version: 1
+name: "Émetteur public – limite de 35 %"
+category: dispersion_emetteur_public
+framework: UCITS
+jurisdiction: LU
+definition: >
+  La limite de 10 % est portée à 35 % maximum lorsque les valeurs mobilières ou instruments du marché monétaire
+  sont émis ou garantis par un État membre, ses collectivités publiques territoriales, un État tiers ou un
+  organisme public international dont font partie un ou plusieurs États membres.
+formula: "Pour chaque émetteur public e : w(e) = Σ valeur de marché coupon couru inclus / actif net ; contrôle max w(e) ≤ 35 %."
+calculator: weight_by_key
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: issuer_id
+  filters:
+    - field: instrument_type
+      op: in
+      value: [debt_security, money_market_instrument]
+    - field: issuer_type
+      op: in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: exclude
+      missing_note: "Type d'émetteur non renseigné : titre non traité comme émetteur public"
+limits:
+  - {key: max_weight, label: "Poids maximal d'un émetteur public", operator: "<=", value: "0.35"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+    - {field: derogation_art45_sovereign, op: is_false}
+exceptions:
+  - "Non applicable si le fonds bénéficie de la dérogation de l'art. 45 (règle LU-UCITS-45-DEROGATION-EMETTEUR-PUBLIC)."
+required_data: [net_assets, positions.total_market_value, positions.issuer_id, positions.issuer_type]
+sources:
+  - {source: LU-LOI-2010, article: "art. 43 §3", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 52 §2", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

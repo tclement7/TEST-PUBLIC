@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Contrôle des ratios{% endblock %} – {{ company }}</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Contrôle des ratios OPCVM</div>
+  <nav>
+    {% set p = request.url.path %}
+    <a href="/" class="{{ 'on' if p == '/' }}">Tableau de bord</a>
+    <a href="/funds" class="{{ 'on' if p.startswith('/fund') }}">Fonds</a>
+    <a href="/history" class="{{ 'on' if p.startswith('/history') }}">Historique</a>
+    <a href="/files" class="{{ 'on' if p.startswith('/files') }}">Fichiers &amp; anomalies</a>
+    <a href="/referentiel" class="{{ 'on' if p.startswith('/referentiel') }}">Référentiel</a>
+    <a href="/exports" class="{{ 'on' if p.startswith('/exports') }}">Exports</a>
+    <a href="/audit" class="{{ 'on' if p.startswith('/audit') }}">Journal</a>
+  </nav>
+</header>
+<main>
+  <div class="disclaimer">⚠ {{ DISCLAIMER }}</div>
+  {% block content %}{% endblock %}
+  <p class="muted small">Moteur {{ ENGINE_VERSION }} – fonctionnement local, aucune donnée transmise à l'extérieur.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,46 @@
+id: LU-UCITS-45-DEROGATION-EMETTEUR-PUBLIC
+version: 1
+name: "Dérogation émetteur public – 6 émissions, 30 % par émission"
+category: dispersion_emetteur_public
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Par dérogation, un OPCVM autorisé peut placer jusqu'à 100 % de ses actifs dans différentes émissions d'un
+  émetteur public, à condition de détenir des valeurs appartenant à six émissions différentes au moins, sans
+  que les valeurs appartenant à une même émission puissent excéder 30 % de ses actifs.
+formula: >
+  Pour chaque émission i d'un émetteur public : w(i) = valeur de marché / actif net ; contrôle max w(i) ≤ 30 %.
+  Pour chaque émetteur public dont le poids total dépasse 35 % : nombre d'émissions distinctes ≥ 6.
+calculator: public_issuer_issues
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: issuer_id
+  issue_field: isin
+  over_threshold: "0.35"
+  filters:
+    - field: instrument_type
+      op: in
+      value: [debt_security, money_market_instrument]
+    - field: issuer_type
+      op: in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: exclude
+      missing_note: "Type d'émetteur non renseigné : titre non traité comme émetteur public"
+limits:
+  - {key: max_issue_weight, label: "Poids maximal d'une émission", operator: "<=", value: "0.30"}
+  - {key: min_issue_count, label: "Nombre minimal d'émissions (émetteurs > 35 %)", operator: ">=", value: "6", unit: count}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+    - {field: derogation_art45_sovereign, op: is_true}
+exceptions:
+  - "Suppose l'autorisation de la CSSF et la mention dans les documents constitutifs (à vérifier)."
+required_data: [net_assets, positions.total_market_value, positions.issuer_id, positions.issuer_type, positions.isin]
+sources:
+  - {source: LU-LOI-2010, article: "art. 45", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 54", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

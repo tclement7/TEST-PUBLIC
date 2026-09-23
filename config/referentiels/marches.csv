@@ -1,0 +1,16 @@
+marche;eligibilite;statut;source;commentaire
+PA (RT) - Euronext Paris;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+AS (RT) - Euronext Amsterdam;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+BR (RT) - Euronext Brussels;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+I (RT) - Irish SE;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;Euronext Dublin
+MI (RT) - Milan SE;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;Borsa Italiana
+DE (RT) - Xetra;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+MC (RT) - Mercado Continuo;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+VI (RT) - Vienna SE;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+HE (RT) - Helsinki SE;marche_reglemente_ue;a_valider;Proposition initiale – à valider par la conformité;
+N (RT) - NYSE;autre_marche_reglemente;a_valider;Proposition initiale – à valider (marché hors UE : éligible si prévu par les documents constitutifs);
+OQ (RT) - Nasdaq Stock Market;autre_marche_reglemente;a_valider;Proposition initiale – à valider (marché hors UE : éligible si prévu par les documents constitutifs);
+BGN (BB) - Bloomberg Generic;inconnu;a_valider;;Source de prix, pas un marché : éligibilité à déterminer ligne par ligne
+NXIP (RT) - NATIXIS;inconnu;a_valider;;Cotation émetteur, pas un marché : éligibilité à déterminer
+Undefined market [undefined];inconnu;a_valider;;Marché non renseigné par l'administrateur
+tech_market [bb_prc_src];inconnu;a_valider;;Marché technique non renseigné par l'administrateur

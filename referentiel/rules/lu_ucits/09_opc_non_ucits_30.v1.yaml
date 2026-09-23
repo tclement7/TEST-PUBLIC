@@ -1,0 +1,33 @@
+id: LU-UCITS-46-2-OPC-NON-OPCVM-30
+version: 1
+name: "OPC autres que OPCVM – 30 % au total"
+category: opc
+framework: UCITS
+jurisdiction: LU
+definition: "Les placements dans des parts d'OPC autres que des OPCVM ne peuvent dépasser, au total, 30 % des actifs de l'OPCVM."
+formula: "w = Σ valeur des parts d'OPC non-OPCVM / actif net ; contrôle w ≤ 30 %."
+calculator: aggregate_filter
+params:
+  base: net_assets
+  amount_field: total_market_value
+  filters:
+    - {field: instrument_type, op: in, value: [fund_unit]}
+    - field: issuer_type
+      op: in
+      value: [fia]
+      on_missing: not_calculable
+      missing_note: "Nature de l'OPC cible (OPCVM / FIA) non renseignée dans le référentiel émetteurs"
+limits:
+  - {key: total, label: "Total OPC non-OPCVM", operator: "<=", value: "0.30"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions: []
+required_data: [net_assets, positions.total_market_value, positions.issuer_type]
+sources:
+  - {source: LU-LOI-2010, article: "art. 46 §2", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 55 §1", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

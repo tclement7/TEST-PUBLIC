@@ -1,0 +1,43 @@
+id: LU-UCITS-43-2-COMBINE-20
+version: 1
+name: "Limite combinée par entité – 20 %"
+category: dispersion_emetteur
+framework: UCITS
+jurisdiction: LU
+definition: >
+  Nonobstant les limites individuelles, un OPCVM ne peut combiner, lorsque cela l'amènerait à investir plus de
+  20 % de ses actifs dans une même entité, des investissements dans des valeurs mobilières ou instruments du
+  marché monétaire émis par cette entité, des dépôts auprès de cette entité et des risques découlant de
+  transactions sur dérivés de gré à gré avec cette entité.
+formula: "Pour chaque entité e : w(e) = (Σ VM et IMM émis par e + dépôts auprès de e + valeurs positives des dérivés OTC avec e) / actif net ; contrôle max w(e) ≤ 20 %."
+calculator: weight_by_key
+params:
+  base: net_assets
+  amount_field: total_market_value
+  key_field: issuer_id
+  amount_transform_by_type: {derivative_otc: positive}
+  filters:
+    - field: instrument_type
+      op: in
+      value: [equity, debt_security, money_market_instrument, structured_certificate, deposit, derivative_otc]
+    - field: issuer_type
+      op: not_in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: include
+      missing_note: "Type d'émetteur non renseigné : ligne conservée dans le calcul (approche prudente)"
+limits:
+  - {key: max_weight, label: "Exposition combinée maximale sur une entité", operator: "<=", value: "0.20"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Les comptes à vue (liquidités à titre accessoire) ne sont pas inclus — traitement à confirmer par la conformité."
+  - "Les émetteurs publics relèvent de l'art. 43 §3 et sont exclus du calcul."
+required_data: [net_assets, positions.total_market_value, positions.issuer_id, positions.issuer_type]
+sources:
+  - {source: LU-LOI-2010, article: "art. 43 §2 (limite combinée)", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 52 §2", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

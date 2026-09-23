@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}
+{% block title %}Référentiel réglementaire{% endblock %}
+{% block content %}
+{% if msg %}<div class="flash">{{ msg }}</div>{% endif %}
+{% for e in errors %}<div class="err">{{ e }}</div>{% endfor %}
+{% for e in ref_errors %}<div class="err">{{ e }}</div>{% endfor %}
+<h1>Référentiel réglementaire</h1>
+<p class="muted small">Les règles sont stockées dans <span class="mono">{{ rules_dir }}</span> (un fichier YAML par version), indépendamment du code. Pour modifier une règle, créer une nouvelle version (fichier <span class="mono">*.v2.yaml</span>) avec sa date d'entrée en vigueur et fermer la précédente (<span class="mono">valid_to</span>) : les calculs passés restent attachés à la version utilisée. Une version déjà enregistrée dont le contenu change est rejetée.</p>
+<div class="table-wrap"><table><thead><tr><th>Règle</th><th>Version</th><th>Catégorie</th><th class="num">Seuils</th><th>Calculateur</th><th>En vigueur</th><th>Sources</th><th>Statut</th></tr></thead><tbody>
+{% for r in rules %}<tr>
+<td><a href="/referentiel/{{ r.rule_id }}/{{ r.version }}"><b>{{ r.name }}</b></a><br><span class="mono small muted">{{ r.rule_id }}</span></td>
+<td>v{{ r.version }}<br><span class="mono small muted">{{ r.content_sha|short }}</span></td>
+<td class="small">{{ r.category|cat }}</td>
+<td class="num small">{% for l in r.limits %}{{ l.operator|op }} {{ limval({'value': l.value, 'unit': l.unit}) }}<br>{% endfor %}</td>
+<td class="mono small">{{ r.calculator }}</td>
+<td class="small">du {{ r.valid_from|date }}{% if r.valid_to %}<br>au {{ r.valid_to|date }}{% endif %}</td>
+<td class="small">{% for s in r.sources %}{{ s.reference or s.source_id }} {{ s.article }} <span class="muted">[{{ s.confidence }}]</span><br>{% endfor %}</td>
+<td>{% if r.validated %}<span class="badge s-CONFORME">Validée</span><div class="ind">{{ r.validation.by }} – {{ r.validation.on|date }}</div>{% else %}<span class="badge s-A_CONFIRMER">Brouillon</span>{% endif %}</td>
+</tr>{% endfor %}
+</tbody></table></div>
+<h2>Sources déclarées</h2>
+<div class="table-wrap"><table><thead><tr><th>Identifiant</th><th>Type</th><th>Titre</th><th>Confiance</th></tr></thead><tbody>
+{% for sid, s in sources.items() %}<tr><td class="mono">{{ sid }}</td><td>{{ s.type }}</td><td>{{ s.title }}</td><td>{{ s.confidence }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Journal d'audit{% endblock %}
+{% block content %}
+<h1>Journal d'audit</h1>
+{% if ok %}<div class="flash">Chaînage du journal vérifié : aucune altération détectée.</div>{% else %}<div class="err">Journal altéré à partir de l'entrée #{{ bad }}.</div>{% endif %}
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Utilisateur</th><th>Action</th><th>Objet</th><th>Détails</th><th>Empreinte</th></tr></thead><tbody>
+{% for a in rows %}<tr><td>{{ a.id }}</td><td class="small">{{ a.ts|date }}</td><td>{{ a.user }}</td><td class="mono">{{ a.action }}</td><td class="small">{{ a.object_type or '' }} {{ a.object_id or '' }}</td><td class="small mono" style="max-width:520px;word-break:break-word">{{ a.details_json[:600] }}</td><td class="mono small">{{ a.hash|short }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

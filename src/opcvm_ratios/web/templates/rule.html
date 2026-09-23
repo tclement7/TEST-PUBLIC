@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ rule.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/referentiel">← Référentiel</a></p>
+<h1>{{ rule.name }} <span class="muted">v{{ rule.version }}</span></h1>
+<div class="grid2">
+<div class="card small">
+<p><b>Identifiant :</b> <span class="mono">{{ rule.rule_id }}</span> · <b>Catégorie :</b> {{ rule.category|cat }} · <b>Calculateur :</b> <span class="mono">{{ rule.calculator }}</span></p>
+<p><b>Définition :</b> {{ rule.definition }}</p>
+<p><b>Formule :</b> {{ rule.formula }}</p>
+<p><b>Seuils :</b> {% for l in rule.limits %}{{ l.label }} {{ l.operator|op }} {{ limval({'value': l.value, 'unit': l.unit}) }}{% if not loop.last %} ; {% endif %}{% endfor %}</p>
+<p><b>En vigueur :</b> du {{ rule.valid_from|date }}{% if rule.valid_to %} au {{ rule.valid_to|date }}{% endif %} <span class="muted">{{ rule.validity_note }}</span></p>
+<p><b>Données nécessaires :</b> {{ rule.required_data|join(', ') }}</p>
+<p><b>Sources :</b><br>{% for s in rule.sources %}{{ s.title or s.source_id }} – {{ s.article }} [{{ s.confidence }}]<br>{% endfor %}</p>
+{% if rule.exceptions %}<p><b>Exceptions / conditions :</b></p><ul>{% for e in rule.exceptions %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<p><b>Empreinte du contenu :</b> <span class="mono">{{ rule.content_sha }}</span><br><b>Fichier :</b> <span class="mono">{{ rule.path }}</span></p>
+<p><b>Versions :</b> {% for v in versions %}<a href="/referentiel/{{ v.rule_id }}/{{ v.version }}">v{{ v.version }}</a> (du {{ v.valid_from|date }}{% if v.valid_to %} au {{ v.valid_to|date }}{% endif %}){% if not loop.last %} · {% endif %}{% endfor %}</p>
+</div>
+<div class="card">
+<h3>Validation</h3>
+{% if rule.validated %}<p><span class="badge s-CONFORME">Validée</span> par <b>{{ rule.validation.by }}</b> le {{ rule.validation.on|date }} {% if rule.validation.comment %}– {{ rule.validation.comment }}{% endif %}</p>
+{% else %}
+<p class="small">Tant qu'elle n'est pas validée, cette règle produit des résultats « À confirmer » (jamais « Conforme »). La validation porte sur cette version exacte (empreinte {{ rule.content_sha|short }}).</p>
+<form method="post" action="/referentiel/{{ rule.rule_id }}/{{ rule.version }}/validate">
+<p><label>Nom du valideur<br><input type="text" name="validated_by" required style="width:100%"></label></p>
+<p><label>Commentaire (références vérifiées, texte consulté…)<br><textarea name="comment" rows="3" style="width:100%"></textarea></label></p>
+<p class="small"><label><input type="checkbox" name="confirm" value="1" required> J'ai vérifié la définition, la formule, les seuils, les conditions d'application et les sources de cette version.</label></p>
+<button class="btn">Valider cette version</button>
+</form>
+{% endif %}
+{% if validations %}<h3>Historique des validations</h3><ul class="small">{% for v in validations %}<li>{{ v.validated_at|date }} – {{ v.validated_by }} – {{ v.comment or '' }} <span class="mono muted">{{ v.content_sha|short }}</span></li>{% endfor %}</ul>{% endif %}
+</div>
+</div>
+<details><summary>Contenu normatif (haché)</summary><pre>{{ content_yaml }}</pre></details>
+{% endblock %}

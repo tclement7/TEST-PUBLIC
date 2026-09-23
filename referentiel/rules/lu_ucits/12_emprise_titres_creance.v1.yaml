@@ -1,0 +1,36 @@
+id: LU-UCITS-48-2-EMPRISE-CREANCES-10
+version: 1
+name: "Emprise – titres de créance d'un même émetteur (10 %)"
+category: emprise
+framework: UCITS
+jurisdiction: LU
+definition: "Un OPCVM ne peut acquérir plus de 10 % des titres de créance d'un même émetteur."
+formula: "Pour chaque émetteur e : h(e) = Σ nominal détenu / encours total émis par e ; contrôle max h(e) ≤ 10 %."
+calculator: holding_ratio
+params:
+  quantity_field: quantity
+  outstanding_field: issuer_outstanding
+  key_field: issuer_id
+  filters:
+    - {field: instrument_type, op: in, value: [debt_security, structured_certificate]}
+    - field: issuer_type
+      op: not_in
+      value: [souverain_ue, souverain_hors_ue, collectivite_ue, organisme_public_international]
+      on_missing: include
+      missing_note: "Type d'émetteur non renseigné : ligne conservée dans le calcul (approche prudente)"
+limits:
+  - {key: max_holding, label: "Part maximale de l'encours émis", operator: "<=", value: "0.10"}
+applicability:
+  all:
+    - {field: legal_framework, op: eq, value: UCITS}
+    - {field: domicile, op: eq, value: LU}
+exceptions:
+  - "Non applicable aux titres émis ou garantis par un État membre ou une autorité publique (art. 48 §3) — à confirmer."
+  - "Limite pouvant ne pas être respectée au moment de l'acquisition si l'encours n'est pas calculable (art. 48 §2)."
+required_data: [positions.quantity, positions.issuer_outstanding]
+sources:
+  - {source: LU-LOI-2010, article: "art. 48 §2", confidence: a_confirmer}
+  - {source: EU-DIR-2009-65, article: "art. 56 §2", confidence: a_confirmer}
+valid_from: "2010-12-17"
+valid_to: null
+validity_note: "Date de la loi ; date d'entrée en vigueur à confirmer"

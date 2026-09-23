@@ -1,0 +1,7 @@
+{% macro badge(s) -%}<span class="badge s-{{ s }}">{{ s|status }}</span>{%- endmacro %}
+{% macro gauge(lim) -%}
+{% if lim.value is not none and lim.unit != 'count' and lim.limit|float > 0 %}
+{% set ratio = (lim.value|float) / (lim.limit|float) %}
+<div class="bar" title="{{ (ratio*100)|round(1) }} % de la limite"><i class="{{ 'ko' if lim.status == 'DEPASSEMENT' else ('near' if lim.status == 'PROCHE_LIMITE' else '') }}" style="width:{{ [ratio*100, 100]|min }}%"></i></div>
+{% endif %}
+{%- endmacro %}
